@@ -47,14 +47,14 @@ class Model:
             }
             
         if rank <= 0:
-            self.flownet.load_state_dict(convert(torch.load('{}/flownet.pkl'.format(path), map_location=torch.device('cpu'))))
+            self.flownet.load_state_dict(convert(torch.load('{}/flownet.pkl'.format(path), map_location=torch.device('cpu'))), strict=False)
         
     def save_model(self, path, rank=0):
         if rank == 0:
             torch.save(self.flownet.state_dict(),'{}/flownet.pkl'.format(path))
 
-    def inference(self, img0, img1, scale=1, scale_list=[4, 2, 1], TTA=False, timestep=0.5):
-        for i in range(3):
+    def inference(self, img0, img1, scale=1, scale_list=[4, 2, 1, 1], TTA=False, timestep=0.5):
+        for i in range(len(scale_list)):
             scale_list[i] = scale_list[i] * 1.0 / scale
         imgs = torch.cat((img0, img1), 1)
         flow, mask, merged, flow_teacher, merged_teacher, loss_distill = self.flownet(imgs, scale_list, timestep=timestep)
@@ -73,7 +73,7 @@ class Model:
             self.train()
         else:
             self.eval()
-        flow, mask, merged, flow_teacher, merged_teacher, loss_distill = self.flownet(torch.cat((imgs, gt), 1), scale=[4, 2, 1])
+        flow, mask, merged, flow_teacher, merged_teacher, loss_distill = self.flownet(torch.cat((imgs, gt), 1), scale=[4, 2, 1, 1])
         loss_l1 = (self.lap(merged[2], gt)).mean()
         loss_tea = (self.lap(merged_teacher, gt)).mean()
         if training:
@@ -92,4 +92,5 @@ class Model:
             'loss_l1': loss_l1,
             'loss_tea': loss_tea,
             'loss_distill': loss_distill,
+            'total_loss': loss_l1 + loss_tea + loss_distill * 0.01
             }

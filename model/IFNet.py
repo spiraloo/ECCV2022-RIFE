@@ -56,11 +56,12 @@ class IFNet(nn.Module):
         self.block0 = IFBlock(6, c=240)
         self.block1 = IFBlock(13+4, c=150)
         self.block2 = IFBlock(13+4, c=90)
+        self.block3 = IFBlock(13+4, c=90)
         self.block_tea = IFBlock(16+4, c=90)
         self.contextnet = Contextnet()
         self.unet = Unet()
 
-    def forward(self, x, scale=[4,2,1], timestep=0.5):
+    def forward(self, x, scale=[4,2,1,1], timestep=0.5):
         img0 = x[:, :3]
         img1 = x[:, 3:6]
         gt = x[:, 6:] # In inference time, gt is None
@@ -71,8 +72,8 @@ class IFNet(nn.Module):
         warped_img1 = img1
         flow = None 
         loss_distill = 0
-        stu = [self.block0, self.block1, self.block2]
-        for i in range(3):
+        stu = [self.block0, self.block1, self.block2, self.block3]
+        for i in range(len(stu)):
             if flow != None:
                 flow_d, mask_d = stu[i](torch.cat((img0, img1, warped_img0, warped_img1, mask), 1), flow, scale=scale[i])
                 flow = flow + flow_d
