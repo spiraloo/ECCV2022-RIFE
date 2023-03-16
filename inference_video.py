@@ -122,7 +122,9 @@ if not args.video is None:
         fpsNotAssigned = False
     videogen = skvideo.io.vreader(args.video)
     lastframe = next(videogen)
-    fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+    lastframe=cv2.resize(lastframe, (640, 480))
+    # fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+    fourcc = cv2.VideoWriter_fourcc(*'MP4V')
     video_path_wo_ext, ext = os.path.splitext(args.video)
     print('{}.{}, {} frames in total, {}FPS to {}FPS'.format(video_path_wo_ext, args.ext, tot_frame, fps, args.fps))
     if args.png == False and fpsNotAssigned == True:
@@ -137,6 +139,7 @@ else:
     tot_frame = len(videogen)
     videogen.sort(key= lambda x:int(x[:-4]))
     lastframe = cv2.imread(os.path.join(args.img, videogen[0]), cv2.IMREAD_UNCHANGED)[:, :, ::-1].copy()
+    lastframe=cv2.resize(lastframe, (640, 480))
     videogen = videogen[1:]
 h, w, _ = lastframe.shape
 vid_out_name = None
@@ -218,7 +221,7 @@ read_buffer = Queue(maxsize=500)
 _thread.start_new_thread(build_read_buffer, (args, read_buffer, videogen))
 _thread.start_new_thread(clear_write_buffer, (args, write_buffer))
 
-lastframe=cv2.resize(lastframe, (640, 480))
+
 I1 = process_frame(lastframe)
 # I1 = torch.from_numpy(np.transpose(lastframe, (2,0,1))).to(device, non_blocking=True).unsqueeze(0).float() / 255.
 # I1 = pad_image(I1)
@@ -299,10 +302,10 @@ if not vid_out is None:
     vid_out.release()
 
 # move audio to new video file if appropriate
-if args.png == False and fpsNotAssigned == True and not args.video is None:
-    try:
-        transferAudio(args.video, vid_out_name)
-    except:
-        print("Audio transfer failed. Interpolated video will have no audio")
-        targetNoAudio = os.path.splitext(vid_out_name)[0] + "_noaudio" + os.path.splitext(vid_out_name)[1]
-        os.rename(targetNoAudio, vid_out_name)
+# if args.png == False and fpsNotAssigned == True and not args.video is None:
+#     try:
+#         transferAudio(args.video, vid_out_name)
+#     except:
+#         print("Audio transfer failed. Interpolated video will have no audio")
+#         targetNoAudio = os.path.splitext(vid_out_name)[0] + "_noaudio" + os.path.splitext(vid_out_name)[1]
+#         os.rename(targetNoAudio, vid_out_name)
