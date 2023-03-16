@@ -12,3 +12,4 @@ test/
 .DS_Store
 __pycache__/
 .ipynb_checkpoints/
+*.mp4

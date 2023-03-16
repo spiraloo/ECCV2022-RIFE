@@ -75,6 +75,7 @@ class IFNet(nn.Module):
         stu = [self.block0, self.block1, self.block2, self.block3]
         for i in range(len(stu)):
             if flow != None:
+                # print(i, scale[i], img0.shape, img1.shape, warped_img0.shape, warped_img1.shape, mask.shape)
                 flow_d, mask_d = stu[i](torch.cat((img0, img1, warped_img0, warped_img1, mask), 1), flow, scale=scale[i])
                 flow = flow + flow_d
                 mask = mask + mask_d

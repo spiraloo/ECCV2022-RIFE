@@ -193,6 +193,16 @@ def pad_image(img):
     else:
         return F.pad(img, padding)
 
+def process_frame(arr):
+  val = int(32/args.scale)
+  img0=(torch.tensor(arr.transpose(2, 0, 1), dtype=torch.float32).to(device)/255.).unsqueeze(0)
+  n, c, h, w = img0.shape
+  ph = ((h - 1) // val + 1) * val
+  pw = ((w - 1) // val + 1) * val
+  padding = (0, pw - w, 0, ph - h)
+  img0 = F.pad(img0, padding)
+  return img0
+
 if args.montage:
     left = w // 4
     w = w // 2
@@ -208,8 +218,10 @@ read_buffer = Queue(maxsize=500)
 _thread.start_new_thread(build_read_buffer, (args, read_buffer, videogen))
 _thread.start_new_thread(clear_write_buffer, (args, write_buffer))
 
-I1 = torch.from_numpy(np.transpose(lastframe, (2,0,1))).to(device, non_blocking=True).unsqueeze(0).float() / 255.
-I1 = pad_image(I1)
+lastframe=cv2.resize(lastframe, (640, 480))
+I1 = process_frame(lastframe)
+# I1 = torch.from_numpy(np.transpose(lastframe, (2,0,1))).to(device, non_blocking=True).unsqueeze(0).float() / 255.
+# I1 = pad_image(I1)
 temp = None # save lastframe when processing static frame
 
 while True:
@@ -220,9 +232,11 @@ while True:
         frame = read_buffer.get()
     if frame is None:
         break
+    frame=cv2.resize(frame, (640, 480))
     I0 = I1
-    I1 = torch.from_numpy(np.transpose(frame, (2,0,1))).to(device, non_blocking=True).unsqueeze(0).float() / 255.
-    I1 = pad_image(I1)
+    # I1 = torch.from_numpy(np.transpose(frame, (2,0,1))).to(device, non_blocking=True).unsqueeze(0).float() / 255.
+    # I1 = pad_image(I1)
+    I1 = process_frame(frame)
     I0_small = F.interpolate(I0, (32, 32), mode='bilinear', align_corners=False)
     I1_small = F.interpolate(I1, (32, 32), mode='bilinear', align_corners=False)
     ssim = ssim_matlab(I0_small[:, :3], I1_small[:, :3])
