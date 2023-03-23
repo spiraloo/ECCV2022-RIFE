@@ -73,7 +73,7 @@ if args.skip:
     print("skip flag is abandoned, please refer to issue #207.")
 if args.UHD and args.scale==1.0:
     args.scale = 0.5
-assert args.scale in [0.25, 0.5, 1.0, 2.0, 4.0]
+assert args.scale in [0.5, 1.0, 2.0, 4.0, 8.0]
 if not args.img is None:
     args.png = True
 
