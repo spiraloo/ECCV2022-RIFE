@@ -56,7 +56,7 @@ class IFNet(nn.Module):
         self.block0 = IFBlock(6, c=240)
         self.block1 = IFBlock(13+4, c=150)
         self.block2 = IFBlock(13+4, c=90)
-        self.block3 = IFBlock(13+4, c=90)
+        self.block3 = IFBlock(16+4, c=90)
         self.block_tea = IFBlock(16+4, c=90)
         self.contextnet = Contextnet()
         self.unet = Unet()
